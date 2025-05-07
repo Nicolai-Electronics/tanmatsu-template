@@ -17,8 +17,6 @@
 static char const TAG[] = "main";
 
 // Global variables
-static esp_lcd_panel_handle_t       display_lcd_panel    = NULL;
-static esp_lcd_panel_io_handle_t    display_lcd_panel_io = NULL;
 static size_t                       display_h_res        = 0;
 static size_t                       display_v_res        = 0;
 static lcd_color_rgb_pixel_format_t display_color_format;
@@ -26,7 +24,7 @@ static pax_buf_t                    fb                = {0};
 static QueueHandle_t                input_event_queue = NULL;
 
 void blit(void) {
-    esp_lcd_panel_draw_bitmap(display_lcd_panel, 0, 0, display_h_res, display_v_res, pax_buf_get_pixels(&fb));
+    bsp_display_blit(0, 0, display_h_res, display_v_res, pax_buf_get_pixels(&fb));
 }
 
 void app_main(void) {
@@ -44,11 +42,6 @@ void app_main(void) {
     // Initialize the Board Support Package
     ESP_ERROR_CHECK(bsp_device_initialize());
 
-    // Fetch the handle for using the screen, this works even when
-    res = bsp_display_get_panel(&display_lcd_panel);
-    ESP_ERROR_CHECK(res);                             // Check that the display handle has been initialized
-    bsp_display_get_panel_io(&display_lcd_panel_io);  // Do not check result of panel IO handle: not all types of
-                                                      // display expose a panel IO handle
     res = bsp_display_get_parameters(&display_h_res, &display_v_res, &display_color_format);
     ESP_ERROR_CHECK(res);  // Check that the display parameters have been initialized
 
