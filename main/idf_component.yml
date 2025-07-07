@@ -1,5 +1,5 @@
 dependencies:
   idf:
     version: '>=5.3.0'
-  badgeteam/badge-bsp: ^0.2.4
+  badgeteam/badge-bsp: ^0.2.5
   robotman2412/pax-gfx: ^1.1.2
