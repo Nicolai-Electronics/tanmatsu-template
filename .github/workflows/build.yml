@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        device: ["tanmatsu", "mch2022"]
+        device: ["tanmatsu", "mch2022","kami","bornhack-2025-circle"]
     steps:
       - run: sudo apt-get install git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
       - name: Check out repository
