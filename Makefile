@@ -19,10 +19,7 @@ export IDF_GITHUB_ASSETS
 # General targets
 
 .PHONY: all
-all: build flash
-
-.PHONY: install
-install: flash
+all: build
 
 # Preparation
 
@@ -142,3 +139,18 @@ size-files:
 .PHONY: format
 format:
 	find main/ -iname '*.h' -o -iname '*.c' -o -iname '*.cpp' | xargs clang-format -i
+
+# Badgelink
+.PHONY: badgelink
+badgelink:
+	rm -rf badgelink
+	git clone https://github.com/badgeteam/esp32-component-badgelink.git badgelink
+	cd badgelink/tools; ./install.sh
+
+.PHONY: install
+install:
+	cd badgelink/tools; ./badgelink.sh appfs upload application "template application" 0 ../../build/tanmatsu/application.bin
+
+.PHONY: run
+run:
+	cd badgelink/tools; ./badgelink.sh start application

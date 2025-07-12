@@ -152,9 +152,12 @@ void app_main(void) {
                              event.args_navigation.state ? "pressed" : "released");
 
                     if (event.args_navigation.key == BSP_INPUT_NAVIGATION_KEY_F1) {
-                        bsp_input_set_backlight_brightness(0);
+                        bsp_device_restart_to_launcher();
                     }
                     if (event.args_navigation.key == BSP_INPUT_NAVIGATION_KEY_F2) {
+                        bsp_input_set_backlight_brightness(0);
+                    }
+                    if (event.args_navigation.key == BSP_INPUT_NAVIGATION_KEY_F3) {
                         bsp_input_set_backlight_brightness(100);
                     }
 
