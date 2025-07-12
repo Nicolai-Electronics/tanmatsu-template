@@ -13,16 +13,10 @@ jobs:
         uses: actions/checkout@v4
       - run: make prepare
       - run: make build DEVICE=${{ matrix.device }}
-      - run: mv build/${{ matrix.device }}/bootloader/*.bin build/${{ matrix.device }}/
-      - run: mv build/${{ matrix.device }}/bootloader/*.elf build/${{ matrix.device }}/
-      - run: mv build/${{ matrix.device }}/partition_table/*.bin build/${{ matrix.device }}/
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.device }}
           path: |
-            build/${{ matrix.device }}/*.bin
-            build/${{ matrix.device }}/${{ matrix.device }}-launcher.elf
-            build/${{ matrix.device }}/bootloader.bin
-            build/${{ matrix.device }}/bootloader.elf
-            build/${{ matrix.device }}/partition-table.bin
+            build/${{ matrix.device }}/application.bin
+            build/${{ matrix.device }}/application.elf

@@ -47,4 +47,4 @@ else()
 endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(${DEVICE}-launcher)
+project(application)
