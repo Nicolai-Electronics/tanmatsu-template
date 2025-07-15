@@ -148,6 +148,7 @@ badgelink:
 	cd badgelink/tools; ./install.sh
 
 .PHONY: install
+install: build
 install:
 	cd badgelink/tools; ./badgelink.sh appfs upload application "template application" 0 ../../build/tanmatsu/application.bin
 
