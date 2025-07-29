@@ -3,6 +3,8 @@
 #include "bsp/display.h"
 #include "bsp/input.h"
 #include "bsp/led.h"
+#include "bsp/power.h"
+#include "custom_certificates.h"
 #include "driver/gpio.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_types.h"
@@ -13,6 +15,8 @@
 #include "pax_gfx.h"
 #include "pax_text.h"
 #include "portmacro.h"
+#include "wifi_connection.h"
+#include "wifi_remote.h"
 
 // Constants
 static char const TAG[] = "main";
@@ -47,10 +51,9 @@ void app_main(void) {
 
     // Initialize the Board Support Package
     ESP_ERROR_CHECK(bsp_device_initialize());
-    bsp_led_initialize();
 
     uint8_t led_data[] = {
-        0x47, 0x00, 0xDF, 0x97, 0x5A, 0xEE, 0xD1, 0x4C, 0xE5, 0xCA, 0x68, 0x65, 0x89, 0xEA, 0x14, 0x25, 0xB8, 0x73,
+        0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0xFF,
     };
     bsp_led_write(led_data, sizeof(led_data));
 
@@ -121,12 +124,28 @@ void app_main(void) {
     ESP_LOGW(TAG, "Hello world!");
 
     pax_background(&fb, WHITE);
-    pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Hello world!");
+    pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Starting WiFi...");
     blit();
+
+    if (wifi_remote_initialize() == ESP_OK) {
+        wifi_connection_init_stack();  // Start the Espressif WiFi stack
+        wifi_connect_try_all();        // Try to connect to one of the stored networks
+
+        pax_background(&fb, WHITE);
+        pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "WiFi started");
+        blit();
+    } else {
+        bsp_power_set_radio_state(BSP_POWER_RADIO_STATE_OFF);
+        ESP_LOGE(TAG, "WiFi radio not responding, WiFi not available");
+        pax_background(&fb, RED);
+        pax_draw_text(&fb, WHITE, pax_font_sky_mono, 16, 0, 0, "WiFi unavailable");
+        blit();
+    }
 
     while (1) {
         bsp_input_event_t event;
         if (xQueueReceive(input_event_queue, &event, portMAX_DELAY) == pdTRUE) {
+            bsp_led_write(led_data, sizeof(led_data));
             switch (event.type) {
                 case INPUT_EVENT_TYPE_KEYBOARD: {
                     if (event.args_keyboard.ascii != '\b' ||
