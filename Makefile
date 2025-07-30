@@ -3,7 +3,7 @@ PORT ?= /dev/ttyACM0
 IDF_PATH ?= $(shell cat .IDF_PATH 2>/dev/null || echo `pwd`/esp-idf)
 IDF_TOOLS_PATH ?= $(shell cat .IDF_TOOLS_PATH 2>/dev/null || echo `pwd`/esp-idf-tools)
 IDF_BRANCH ?= master
-IDF_COMMIT ?= 323e94257d185e33d26a7903fac4b26fcd73ad18
+IDF_COMMIT ?= aaebc374676621980878789c49d239232ea714c5
 IDF_EXPORT_QUIET ?= 1
 IDF_GITHUB_ASSETS ?= dl.espressif.com/github_assets
 MAKEFLAGS += --silent
@@ -112,13 +112,24 @@ erase:
 monitor:
 	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) monitor -p $(PORT)
 
+# Debugging
+
 .PHONY: openocd
 openocd:
-	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) openocd
+	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) -DDEVICE=$(DEVICE) openocd
 
 .PHONY: gdb
 gdb:
-	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) gdb
+	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) -DDEVICE=$(DEVICE) gdb
+
+.PHONY: gdbgui
+gdbgui:
+	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) -DDEVICE=$(DEVICE) gdbgui
+
+.PHONY: gdbtui
+gdbtui:
+	source "$(IDF_PATH)/export.sh" && idf.py -B $(BUILD) -DDEVICE=$(DEVICE) gdbtui
+
 
 # Tools
 
