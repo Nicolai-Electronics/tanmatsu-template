@@ -30,6 +30,7 @@ static pax_buf_t                    fb                   = {0};
 static QueueHandle_t                input_event_queue    = NULL;
 
 #if defined(CONFIG_BSP_TARGET_KAMI)
+// Temporary addition for supporting epaper devices (irrelevant for Tanmatsu)
 static pax_col_t palette[] = {0xffffffff, 0xff000000, 0xffff0000};  // white, black, red
 #endif
 
@@ -95,16 +96,17 @@ void app_main(void) {
 
         // Initialize graphics stack
 #if defined(CONFIG_BSP_TARGET_KAMI)
+    // Temporary addition for supporting epaper devices (irrelevant for Tanmatsu)
     format = PAX_BUF_2_PAL;
 #endif
-
     pax_buf_init(&fb, NULL, display_h_res, display_v_res, format);
     pax_buf_reversed(&fb, display_data_endian == LCD_RGB_DATA_ENDIAN_BIG);
-
 #if defined(CONFIG_BSP_TARGET_KAMI)
+    // Temporary addition for supporting epaper devices (irrelevant for Tanmatsu)
     fb.palette      = palette;
     fb.palette_size = sizeof(palette) / sizeof(pax_col_t);
 #endif
+    pax_buf_set_orientation(&fb, orientation);
 
 #if defined(CONFIG_BSP_TARGET_KAMI)
 #define BLACK 0
@@ -116,24 +118,34 @@ void app_main(void) {
 #define RED   0xFFFF0000
 #endif
 
-    pax_buf_set_orientation(&fb, orientation);
-
     // Get input event queue from BSP
     ESP_ERROR_CHECK(bsp_input_get_queue(&input_event_queue));
 
-    ESP_LOGW(TAG, "Hello world!");
-
+    // Start WiFi stack (if your app does not require WiFi or BLE you can remove this section)
     pax_background(&fb, WHITE);
-    pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Starting WiFi...");
+    pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Connecting to radio...");
     blit();
 
     if (wifi_remote_initialize() == ESP_OK) {
-        wifi_connection_init_stack();  // Start the Espressif WiFi stack
-        wifi_connect_try_all();        // Try to connect to one of the stored networks
 
         pax_background(&fb, WHITE);
-        pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "WiFi started");
+        pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Starting WiFi stack...");
         blit();
+        wifi_connection_init_stack();  // Start the Espressif WiFi stack
+
+        pax_background(&fb, WHITE);
+        pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Connecting to WiFi network...");
+        blit();
+
+        if (wifi_connect_try_all() == ESP_OK) {
+            pax_background(&fb, WHITE);
+            pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Succesfully connected to WiFi network");
+            blit();
+        } else {
+            pax_background(&fb, RED);
+            pax_draw_text(&fb, WHITE, pax_font_sky_mono, 16, 0, 0, "Failed to connect to WiFi network");
+            blit();
+        }
     } else {
         bsp_power_set_radio_state(BSP_POWER_RADIO_STATE_OFF);
         ESP_LOGE(TAG, "WiFi radio not responding, WiFi not available");
@@ -141,6 +153,19 @@ void app_main(void) {
         pax_draw_text(&fb, WHITE, pax_font_sky_mono, 16, 0, 0, "WiFi unavailable");
         blit();
     }
+
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    // Main section of the app
+
+    // This example shows how to read from the BSP event queue to read input events
+
+    // If you want to run something at an interval in this same main thread you can replace portMAX_DELAY with an amount
+    // of ticks to wait, for example pdMS_TO_TICKS(1000)
+
+    pax_background(&fb, WHITE);
+    pax_draw_text(&fb, BLACK, pax_font_sky_mono, 16, 0, 0, "Welcome! Press any key to trigger an event.");
+    blit();
 
     while (1) {
         bsp_input_event_t event;
