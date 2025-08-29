@@ -17,3 +17,4 @@ shell.nix
 sdkconfig*
 .submodules_update_done
 badgelink
+sdkconfig_*
