@@ -59,8 +59,6 @@ void app_main(void) {
                 .num_fbs                = 1,
             },
     };
-
-    // Initialize the Board Support Package
     ESP_ERROR_CHECK(bsp_device_initialize(&bsp_configuration));
 
     uint8_t led_data[] = {
