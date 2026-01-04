@@ -51,12 +51,23 @@ void app_main(void) {
     ESP_ERROR_CHECK(res);
 
     // Initialize the Board Support Package
-    ESP_ERROR_CHECK(bsp_device_initialize());
-
-    uint8_t led_data[] = {
-        0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0xFF,
+    const bsp_configuration_t bsp_configuration = {
+        .display =
+            {
+                .requested_color_format = LCD_COLOR_PIXEL_FORMAT_RGB565,
+                .num_fbs                = 1,
+            },
     };
-    bsp_led_write(led_data, sizeof(led_data));
+    ESP_ERROR_CHECK(bsp_device_initialize(&bsp_configuration));
+
+    bsp_led_set_pixel(0, 0xFF0000); // Red
+    bsp_led_set_pixel(1, 0x00FF00); // Green
+    bsp_led_set_pixel(2, 0x0000FF); // Blue
+    bsp_led_set_pixel(3, 0xFFFF00); // Yellow
+    bsp_led_set_pixel(4, 0x00FFFF); // Magenta
+    bsp_led_set_pixel(5, 0xFF00FF); // Cyan
+    bsp_led_send(); // Send data to the coprocessor
+    bsp_led_set_mode(false); // Take control over all LEDs by disabling automatic mode
 
     // Get display parameters and rotation
     res = bsp_display_get_parameters(&display_h_res, &display_v_res, &display_color_format, &display_data_endian);
@@ -170,7 +181,6 @@ void app_main(void) {
     while (1) {
         bsp_input_event_t event;
         if (xQueueReceive(input_event_queue, &event, portMAX_DELAY) == pdTRUE) {
-            bsp_led_write(led_data, sizeof(led_data));
             switch (event.type) {
                 case INPUT_EVENT_TYPE_KEYBOARD: {
                     if (event.args_keyboard.ascii != '\b' ||
