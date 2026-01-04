@@ -60,14 +60,14 @@ void app_main(void) {
     };
     ESP_ERROR_CHECK(bsp_device_initialize(&bsp_configuration));
 
-    bsp_led_set_pixel(0, 0xFF0000); // Red
-    bsp_led_set_pixel(1, 0x00FF00); // Green
-    bsp_led_set_pixel(2, 0x0000FF); // Blue
-    bsp_led_set_pixel(3, 0xFFFF00); // Yellow
-    bsp_led_set_pixel(4, 0x00FFFF); // Magenta
-    bsp_led_set_pixel(5, 0xFF00FF); // Cyan
-    bsp_led_send(); // Send data to the coprocessor
-    bsp_led_set_mode(false); // Take control over all LEDs by disabling automatic mode
+    bsp_led_set_pixel(0, 0xFF0000);  // Red
+    bsp_led_set_pixel(1, 0x00FF00);  // Green
+    bsp_led_set_pixel(2, 0x0000FF);  // Blue
+    bsp_led_set_pixel(3, 0xFFFF00);  // Yellow
+    bsp_led_set_pixel(4, 0x00FFFF);  // Magenta
+    bsp_led_set_pixel(5, 0xFF00FF);  // Cyan
+    bsp_led_send();                  // Send data to the coprocessor
+    bsp_led_set_mode(false);         // Take control over all LEDs by disabling automatic mode
 
     // Get display parameters and rotation
     res = bsp_display_get_parameters(&display_h_res, &display_v_res, &display_color_format, &display_data_endian);
