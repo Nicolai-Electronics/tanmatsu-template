@@ -4,7 +4,6 @@ main/kbelf_lib.c
 sdkconfig.old
 *.bak
 *.old
-.vscode
 tools/__pycache__
 .cache
 esp-idf
@@ -14,7 +13,11 @@ managed_components
 .IDF_PATH
 .IDF_TOOLS_PATH
 shell.nix
-sdkconfig*
+sdkconfig
 .submodules_update_done
-badgelink
 sdkconfig_*
+REPOLAYOUT.md
+CLAUDE.md
+components/badgeteam__badgelink/
+.vscode
+badgelink
