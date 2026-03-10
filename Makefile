@@ -47,10 +47,23 @@ export IDF_GITHUB_ASSETS
 # General targets
 
 .PHONY: all
-all: build flash
+all: build
+
+# Badgelink
+.PHONY: badgelink
+badgelink:
+	rm -rf badgelink
+	git clone https://github.com/badgeteam/esp32-component-badgelink.git badgelink
+	cd badgelink/tools; ./install.sh
 
 .PHONY: install
-install: flash
+install: build
+install:
+	cd badgelink/tools; ./badgelink.sh appfs upload application "template application" 0 ../../$(BUILD)/application.bin
+
+.PHONY: run
+run:
+	cd badgelink/tools; ./badgelink.sh start application
 
 # Preparation
 
