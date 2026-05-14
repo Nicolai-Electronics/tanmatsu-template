@@ -32,6 +32,8 @@ else ifeq ($(DEVICE), kami)
 IDF_TARGET ?= esp32
 else ifeq ($(DEVICE), hackerhotel-2024)
 IDF_TARGET ?= esp32c6
+else ifeq ($(DEVICE), heltecv3)
+IDF_TARGET ?= esp32s3
 else
 $(warning "Unknown device, defaulting to ESP32 $(DEVICE)")
 IDF_TARGET ?= esp32
