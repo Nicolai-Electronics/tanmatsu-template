@@ -55,7 +55,7 @@ static void blit(void) {
 static void display_message(const char* message) {
     if (pax_buf_get_width(&fb) > 0) {
         pax_background(&fb, BLACK);
-        pax_draw_text(&fb, WHITE, pax_font_sky_mono, 16, 0, 0, message);
+        pax_draw_text(&fb, WHITE, pax_font_saira_regular, 16, 0, 0, message);
         blit();
     } else {
         ESP_LOGI(TAG, "Message: %s", message);
@@ -238,7 +238,7 @@ void app_main(void) {
     // If you want to run something at an interval in this same main thread you can replace portMAX_DELAY with an amount
     // of ticks to wait, for example pdMS_TO_TICKS(1000)
 
-    display_message("Welcome! Press any key to trigger an event.");
+    display_message("Badge BSP on the Hackaday badge :D");
 
     while (1) {
         bsp_input_event_t event;
