@@ -1,20 +1,26 @@
+# Device parameters
+DEVICE ?= tanmatsu
 PORT ?= /dev/ttyACM0
 
-IDF_PATH ?= $(shell cat .IDF_PATH 2>/dev/null || echo `pwd`/esp-idf)
-IDF_TOOLS_PATH ?= $(shell cat .IDF_TOOLS_PATH 2>/dev/null || echo `pwd`/esp-idf-tools)
-IDF_BRANCH ?= v5.5.2
-#IDF_COMMIT ?= aaebc374676621980878789c49d239232ea714c5
-IDF_EXPORT_QUIET ?= 1
-IDF_GITHUB_ASSETS ?= dl.espressif.com/github_assets
-MAKEFLAGS += --silent
-
-SHELL := /usr/bin/env bash
-
-DEVICE ?= tanmatsu
+# Build parameters
+IDF_VERSION ?= v5.5.2
 BUILD ?= build/$(DEVICE)
 FAT ?= 0
 SDKCONFIG_DEFAULTS ?= sdkconfigs/general;sdkconfigs/$(DEVICE)
 SDKCONFIG ?= sdkconfig_$(DEVICE)
+
+# SDK
+IDF_PATH ?= $(shell cat .IDF_PATH 2>/dev/null || test -d `pwd`/esp-idf && echo `pwd`/esp-idf || echo '$(HOME)/.espressif/$(IDF_VERSION)/esp-idf')
+IDF_TOOLS_PATH ?= $(shell cat .IDF_TOOLS_PATH 2>/dev/null || test -d `pwd`/esp-idf-tools && echo `pwd`/esp-idf-tools || echo '$(HOME)/.espressif/tools')
+IDF_SOURCE ?= $(shell cat .IDF_PATH 2>/dev/null && echo '$(IDF_PATH)/export.sh' || test -d `pwd`/esp-idf && echo '$(IDF_PATH)/export.sh' || echo '$(HOME)/.espressif/tools/activate_idf_$(IDF_VERSION).sh')
+IDF_EXPORT_QUIET ?= 1
+IDF_GITHUB_ASSETS ?= dl.espressif.com/github_assets
+IDF_INSTALL_PATH ?= $(shell echo `pwd`/esp-idf)
+IDF_INSTALL_TOOLS_PATH ?= $(shell echo `pwd`/esp-idf-tools)
+
+MAKEFLAGS += --silent
+SHELL := /usr/bin/env bash
+
 
 ####
 
@@ -82,13 +88,32 @@ submodules:
 
 .PHONY: sdk
 sdk:
-	if test -d "$(IDF_PATH)"; then echo -e "ESP-IDF target folder exists!\r\nPlease remove the folder or un-set the environment variable."; exit 1; fi
-	if test -d "$(IDF_TOOLS_PATH)"; then echo -e "ESP-IDF tools target folder exists!\r\nPlease remove the folder or un-set the environment variable."; exit 1; fi
-	git clone --recursive --branch "$(IDF_BRANCH)" https://github.com/espressif/esp-idf.git "$(IDF_PATH)" --depth=1 --shallow-submodules
-#	cd "$(IDF_PATH)"; git fetch origin "$(IDF_COMMIT)" --recurse-submodules || true
-#	cd "$(IDF_PATH)"; git checkout "$(IDF_COMMIT)"
-	cd "$(IDF_PATH)"; git submodule update --init --recursive
-	cd "$(IDF_PATH)"; bash install.sh all
+	if test -d "$(IDF_INSTALL_PATH)"; then echo -e "ESP-IDF target folder exists!\r\nPlease remove the folder or un-set the environment variable."; exit 1; fi
+	if test -d "$(IDF_INSTALL_TOOLS_PATH)"; then echo -e "ESP-IDF tools target folder exists!\r\nPlease remove the folder or un-set the environment variable."; exit 1; fi
+	git clone --recursive --branch "$(IDF_VERSION)" https://github.com/espressif/esp-idf.git "$(IDF_INSTALL_PATH)" --depth=1 --shallow-submodules
+	cd "$(IDF_INSTALL_PATH)"; git submodule update --init --recursive
+	cd "$(IDF_INSTALL_PATH)"; bash install.sh all
+
+.PHONY: eim-sdk
+eim-sdk:
+	eim install --do-not-track true -i $(IDF_VERSION)
+
+.PHONY: check-sdk
+check-sdk:
+	@if test -d $(IDF_PATH); then \
+		printf '%s\n' "ESP-IDF $(IDF_VERSION) found!"; \
+	else \
+		printf 'ESP-IDF SDK not found. %s\n' "Please install ESP-IDF $(IDF_VERSION), either by running 'make prepare' (installs to this folder) or 'make eim-sdk' (installs using Espressif installation manager) or if manually installed set the IDF_PATH and IDF_TOOLS_PATH environment variables or create files .IDF_PATH and .IDF_TOOLS_PATH in this folder containing the paths." >&2; \
+		exit 1; \
+	fi
+
+.PHONY: print-sdk
+print-sdk:
+	echo "ESP-IDF path:               $(IDF_PATH)"
+	echo "ESP-IDF tools:              $(IDF_TOOLS_PATH)"
+	echo "ESP-IDF source command:     $(IDF_SOURCE)"
+	echo "ESP-IDF installation path:  $(IDF_INSTALL_PATH)"
+	echo "ESP-IDF installation tools: $(IDF_INSTALL_TOOLS_PATH)"
 
 .PHONY: reinstallsdk
 reinstallsdk:
@@ -104,7 +129,7 @@ refreshsdk: removesdk sdk
 
 .PHONY: menuconfig
 menuconfig:
-	source "$(IDF_PATH)/export.sh" && idf.py menuconfig -DDEVICE=$(DEVICE) -DSDKCONFIG_DEFAULTS="$(SDKCONFIG_DEFAULTS)" -DSDKCONFIG=$(SDKCONFIG) -DIDF_TARGET=$(IDF_TARGET)
+	source "$(IDF_SOURCE)" && idf.py menuconfig -DDEVICE=$(DEVICE) -DSDKCONFIG_DEFAULTS="$(SDKCONFIG_DEFAULTS)" -DSDKCONFIG=$(SDKCONFIG) -DIDF_TARGET=$(IDF_TARGET)
 	
 # Cleaning
 
@@ -127,91 +152,73 @@ fullclean: clean
 checkbuildenv:
 	if [ -z "$(IDF_PATH)" ]; then echo "IDF_PATH is not set!"; exit 1; fi
 	if [ -z "$(IDF_TOOLS_PATH)" ]; then echo "IDF_TOOLS_PATH is not set!"; exit 1; fi
-	# Check if the IDF commit id the one we need
-	#if [ -d "$(IDF_PATH)" ]; then \
-	#	if [ "$(IDF_COMMIT)" != "$(shell cd $(IDF_PATH); git rev-parse HEAD)" ]; then \
-	#		echo "ESP-IDF commit id does not match! Expected '$(IDF_COMMIT)' got '$(shell git rev-parse HEAD)'"; \
-	#		echo "Run $ make refreshsdk"; \
-	#		echo "To update the ESP-IDF to the correct commit id"; \
-	#		echo "Or set the IDF_COMMIT variable in the Makefile to the correct commit id"; \
-	#		exit 1; \
-	#	fi; \
-	#fi
 
 # Building
 
 .PHONY: build
-build: icons checkbuildenv submodules
-	source "$(IDF_PATH)/export.sh" >/dev/null && idf.py $(IDF_PARAMS)
+build: check-sdk icons checkbuildenv submodules
+	source "$(IDF_SOURCE)" >/dev/null && idf.py $(IDF_PARAMS)
 
 # Hardware
 
 .PHONY: flash
 flash: build
-	source "$(IDF_PATH)/export.sh" && \
+	source "$(IDF_SOURCE)" && \
 	idf.py $(IDF_PARAMS) flash -p $(PORT)
 
 .PHONY: flashmonitor
 flashmonitor: build
-	source "$(IDF_PATH)/export.sh" && \
+	source "$(IDF_SOURCE)" && \
 	idf.py $(IDF_PARAMS) flash -p $(PORT) monitor
 
 .PHONY: prepappfs
 prepappfs:
-	source "$(IDF_PATH)/export.sh" && \
+	source "$(IDF_SOURCE)" && \
 	python3 managed_components/badgeteam__appfs/tools/appfs_generate.py \
 	8192000 \
 	appfs.bin
 
-.PHONY: appfs
-appfs:
-	source "$(IDF_PATH)/export.sh" && \
-	esptool.py \
-		-b 921600 --port $(PORT) \
-		write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
-		0x330000 appfs.bin
-
 .PHONY: erase
 erase:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) erase-flash -p $(PORT)
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) erase-flash -p $(PORT)
 
 .PHONY: monitor
 monitor:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) monitor -p $(PORT)
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) monitor -p $(PORT)
 
 .PHONY: openocd
 openocd:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) openocd
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) openocd
 
 .PHONY: openocdftdi
 openocdftdi:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) openocd --openocd-commands "-f board/esp32p4-ftdi.cfg"
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) openocd --openocd-commands "-f board/esp32p4-ftdi.cfg"
 
 .PHONY: gdb
 gdb:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) gdb
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) gdb
 
 .PHONY: gdbgui
 gdbgui:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) gdbgui
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) gdbgui
 
 .PHONY: gdbtui
 gdbtui:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) gdbtui
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) gdbtui
 
 # Tools
 
 .PHONY: size
 size:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) size
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) size
 
 .PHONY: size-components
 size-components:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) size-components
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) size-components
 
 .PHONY: size-files
 size-files:
-	source "$(IDF_PATH)/export.sh" && idf.py $(IDF_PARAMS) size-files
+	source "$(IDF_SOURCE)" && idf.py $(IDF_PARAMS) size-files
 
 .PHONY: efuse
 efuse:
@@ -247,17 +254,12 @@ main/fat/icons/%.png: main/static/icons/%.svg
 .PHONY: buildall
 buildall:
 	$(MAKE) build DEVICE=tanmatsu
-	$(MAKE) build DEVICE=konsool
-	$(MAKE) build DEVICE=hackerhotel-2026
 	$(MAKE) build DEVICE=esp32-p4-function-ev-board
 	$(MAKE) build DEVICE=mch2022
+	$(MAKE) build DEVICE=hackaday2025
 	$(MAKE) build DEVICE=hackerhotel-2024
-
-# Flash all: assumes Tanmatsu P4 is /dev/ttyACM0, C6 is /dev/ttyACM1 and MCH2022 badge is /dev/ttyACM2
-.PHONY: flashall
-flashall:
-	$(MAKE) flash DEVICE=tanmatsu PORT=/dev/ttyACM0
-	$(MAKE) flash DEVICE=mch2022 PORT=/dev/ttyACM2
+	$(MAKE) build DEVICE=heltecv3
+	$(MAKE) build DEVICE=kami
 
 # Vscode
 .PHONY: vscode
