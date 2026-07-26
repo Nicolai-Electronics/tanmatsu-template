@@ -76,7 +76,7 @@ run:
 # Preparation
 
 .PHONY: prepare
-prepare: submodules sdk
+prepare: sdk
 
 .PHONY: submodules
 submodules: 
@@ -156,7 +156,7 @@ checkbuildenv:
 # Building
 
 .PHONY: build
-build: check-sdk icons checkbuildenv submodules
+build: check-sdk icons checkbuildenv
 	source "$(IDF_SOURCE)" >/dev/null && idf.py $(IDF_PARAMS)
 
 # Hardware
