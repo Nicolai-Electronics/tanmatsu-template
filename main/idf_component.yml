@@ -1,5 +1,5 @@
 dependencies:
-  idf: ">=5.5.1"
-  badgeteam/badge-bsp: "=1.0.4"
-  nicolaielectronics/tanmatsu-wifi: "=1.2.0"
+  idf: ">=6.0.2"
+  badgeteam/badge-bsp: "=1.1.0"
+  nicolaielectronics/tanmatsu-wifi: "=1.3.0"
   robotman2412/pax-gfx: "=2.2.2"

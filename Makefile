@@ -3,7 +3,7 @@ DEVICE ?= tanmatsu
 PORT ?= /dev/ttyACM0
 
 # Build parameters
-IDF_VERSION ?= v5.5.2
+IDF_VERSION ?= v6.0.2
 BUILD ?= build/$(DEVICE)
 FAT ?= 0
 SDKCONFIG_DEFAULTS ?= sdkconfigs/general;sdkconfigs/$(DEVICE)
@@ -28,24 +28,26 @@ SHELL := /usr/bin/env bash
 
 ifeq ($(DEVICE), tanmatsu)
 IDF_TARGET ?= esp32p4
-else ifeq ($(DEVICE), esp32-p4-function-ev-board)
-IDF_TARGET ?= esp32p4
 else ifeq ($(DEVICE), mch2022)
 IDF_TARGET ?= esp32
 else ifeq ($(DEVICE), kami)
 IDF_TARGET ?= esp32
 else ifeq ($(DEVICE), hackerhotel-2024)
 IDF_TARGET ?= esp32c6
-else ifeq ($(DEVICE), heltecv3)
-IDF_TARGET ?= esp32s3
 else ifeq ($(DEVICE), hackaday2025)
 IDF_TARGET ?= esp32s3
+else ifeq ($(DEVICE), heltecv3)
+IDF_TARGET ?= esp32s3
+else ifeq ($(DEVICE), esp32-p4-function-ev-board)
+IDF_TARGET ?= esp32p4
+else ifeq ($(DEVICE), esp32-s31-korvo-1)
+IDF_TARGET ?= esp32s31
 else
 $(warning "Unknown device, defaulting to ESP32")
 IDF_TARGET ?= esp32
 endif
 
-IDF_PARAMS := -B $(BUILD) build -DDEVICE=$(DEVICE) -DSDKCONFIG_DEFAULTS="$(SDKCONFIG_DEFAULTS)" -DSDKCONFIG=$(SDKCONFIG) -DIDF_TARGET=$(IDF_TARGET) -DFAT=$(FAT)
+IDF_PARAMS := -B $(BUILD) -DDEVICE=$(DEVICE) -DSDKCONFIG_DEFAULTS="$(SDKCONFIG_DEFAULTS)" -DSDKCONFIG=$(SDKCONFIG) -DIDF_TARGET=$(IDF_TARGET) -DFAT=$(FAT)
 
 #####
 
@@ -142,6 +144,8 @@ clean:
 
 .PHONY: fullclean
 fullclean: clean
+	rm -rf build
+	rm -f sdkconfig_*
 	rm -f sdkconfig
 	rm -f sdkconfig.old
 	rm -f sdkconfig.ci
@@ -157,7 +161,11 @@ checkbuildenv:
 
 .PHONY: build
 build: check-sdk icons checkbuildenv
-	source "$(IDF_SOURCE)" >/dev/null && idf.py $(IDF_PARAMS)
+	source "$(IDF_SOURCE)" >/dev/null && idf.py $(IDF_PARAMS) build
+
+.PHONY: reconfigure
+reconfigure: check-sdk checkbuildenv
+	source "$(IDF_SOURCE)" >/dev/null && idf.py $(IDF_PARAMS) reconfigure
 
 # Hardware
 
