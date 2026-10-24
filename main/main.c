@@ -19,6 +19,16 @@
 #include "wifi_connection.h"
 #include "wifi_remote.h"
 
+#if CONFIG_IDF_TARGET_ESP32P4
+#include "esp_hosted.h"
+#endif
+
+#if CONFIG_BT_NIMBLE_ENABLED
+#include "host/ble_hs.h"
+#include "nimble/nimble_port.h"
+#include "nimble/nimble_port_freertos.h"
+#endif
+
 // Constants
 static char const TAG[] = "main";
 
@@ -61,6 +71,52 @@ static void display_message(const char* message) {
         ESP_LOGI(TAG, "Message: %s", message);
     }
 }
+
+#if CONFIG_BT_NIMBLE_ENABLED
+// NimBLE host task: runs until nimble_port_stop() is called
+static void ble_host_task(void* param) {
+    nimble_port_run();
+    nimble_port_freertos_deinit();
+}
+
+static void ble_on_reset(int reason) {
+    ESP_LOGW(TAG, "BLE host reset, reason: %d", reason);
+}
+
+static void ble_on_sync(void) {
+    ESP_LOGI(TAG, "BLE host synced with controller");
+    // Add your GAP/GATT service setup and start advertising here
+}
+
+// Starts the NimBLE host. On targets where BT is provided by a co-processor (connected over
+// esp-hosted) the companion chip's BT controller must be brought up before the NimBLE host's
+// transport buffers exist, otherwise an incoming HCI event can crash the allocator.
+// If you don't need BT then disable the CONFIG_BT_NIMBLE_ENABLED configuration option in the
+// sdkconfig file too to prevent incoming HCI events from crashing the application.
+
+static esp_err_t ble_init(void) {
+#if CONFIG_IDF_TARGET_ESP32P4
+    if (esp_hosted_bt_controller_init() != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to initialize hosted BT controller");
+    }
+    if (esp_hosted_bt_controller_enable() != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to enable hosted BT controller");
+    }
+#endif
+
+    esp_err_t res = nimble_port_init();
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize NimBLE host stack: %d", res);
+        return res;
+    }
+
+    ble_hs_cfg.reset_cb = ble_on_reset;
+    ble_hs_cfg.sync_cb  = ble_on_sync;
+
+    nimble_port_freertos_init(ble_host_task);
+    return ESP_OK;
+}
+#endif
 
 void app_main(void) {
     // Start the GPIO interrupt service
@@ -228,6 +284,19 @@ void app_main(void) {
         ESP_LOGE(TAG, "WiFi radio not responding, WiFi not available");
         display_message("WiFi radio unavailable");
     }
+
+#if CONFIG_BT_NIMBLE_ENABLED
+    // Only bring up BLE once the radio (or the esp-hosted co-processor link, on targets where BT
+    // and WiFi share that link) is confirmed to be up. If your app does not require BLE you can
+    // remove this section (and disable Bluetooth/NimBLE in menuconfig).
+    if (wifi_remote_get_initialized()) {
+        display_message("Starting BLE stack...");
+        if (ble_init() != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to start BLE stack");
+            display_message("Failed to start BLE stack");
+        }
+    }
+#endif
 
     vTaskDelay(pdMS_TO_TICKS(500));
 
