@@ -10,9 +10,9 @@ SDKCONFIG_DEFAULTS ?= sdkconfigs/general;sdkconfigs/$(DEVICE)
 SDKCONFIG ?= sdkconfig_$(DEVICE)
 
 # SDK
-IDF_PATH ?= $(shell cat .IDF_PATH 2>/dev/null || test -d `pwd`/esp-idf && echo `pwd`/esp-idf || echo '$(HOME)/.espressif/$(IDF_VERSION)/esp-idf')
-IDF_TOOLS_PATH ?= $(shell cat .IDF_TOOLS_PATH 2>/dev/null || test -d `pwd`/esp-idf-tools && echo `pwd`/esp-idf-tools || echo '$(HOME)/.espressif/tools')
-IDF_SOURCE ?= $(shell cat .IDF_PATH 2>/dev/null && echo '$(IDF_PATH)/export.sh' || test -d `pwd`/esp-idf && echo '$(IDF_PATH)/export.sh' || echo '$(HOME)/.espressif/tools/activate_idf_$(IDF_VERSION).sh')
+IDF_PATH ?= $(shell if [ -f .IDF_PATH ]; then cat .IDF_PATH; elif [ -d "`pwd`/esp-idf" ]; then echo "`pwd`/esp-idf"; else echo '$(HOME)/.espressif/$(IDF_VERSION)/esp-idf'; fi)
+IDF_TOOLS_PATH ?= $(shell if [ -f .IDF_TOOLS_PATH ]; then cat .IDF_TOOLS_PATH; elif [ -d "`pwd`/esp-idf-tools" ]; then echo "`pwd`/esp-idf-tools"; else echo '$(HOME)/.espressif/tools'; fi)
+IDF_SOURCE ?= $(shell if [ -f .IDF_PATH ] || [ -d "`pwd`/esp-idf" ]; then echo '$(IDF_PATH)/export.sh'; else echo '$(HOME)/.espressif/tools/activate_idf_$(IDF_VERSION).sh'; fi)
 IDF_EXPORT_QUIET ?= 1
 IDF_GITHUB_ASSETS ?= dl.espressif.com/github_assets
 IDF_INSTALL_PATH ?= $(shell echo `pwd`/esp-idf)
