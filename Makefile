@@ -45,7 +45,7 @@ IDF_TARGET ?= esp32s31
 else ifeq ($(DEVICE), why2025)
 IDF_TARGET ?= esp32p4
 else
-$(warning "Unknown device, defaulting to ESP32")
+$(error "Unknown device")
 IDF_TARGET ?= esp32
 endif
 
