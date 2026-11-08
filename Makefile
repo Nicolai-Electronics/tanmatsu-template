@@ -282,32 +282,33 @@ vscode:
 idf-version-test:
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-6.0.2 IDF_VERSION=6.0.2
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-6.0.2 IDF_VERSION=v6.0.2
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.6 IDF_VERSION=5.5.6
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.6 IDF_VERSION=v5.5.6
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.5 IDF_VERSION=5.5.5
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.5 IDF_VERSION=v5.5.5
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.4 IDF_VERSION=5.5.4
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.4 IDF_VERSION=v5.5.4
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.3 IDF_VERSION=5.5.3
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.3 IDF_VERSION=v5.5.3
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.2 IDF_VERSION=5.5.2
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.2 IDF_VERSION=v5.5.2
 	rm -rf sdkconfig_tanmatsu
 	rm -rf managed_components
-	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.1 IDF_VERSION=5.5.1
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.1 IDF_VERSION=v5.5.1
 
 .PHONY: idf-version-test-install
 idf-version-test-install:
-	eim install --do-not-track true -i 6.0.2
-	eim install --do-not-track true -i 5.5.6
-	eim install --do-not-track true -i 5.5.5
-	eim install --do-not-track true -i 5.5.4
-	eim install --do-not-track true -i 5.5.3
-	eim install --do-not-track true -i 5.5.2
-	eim install --do-not-track true -i 5.5.1
+	eim install --do-not-track true -i v6.0.2
+	eim install --do-not-track true -i v5.5.6
+	eim install --do-not-track true -i v5.5.5
+	eim install --do-not-track true -i v5.5.4
+	eim install --do-not-track true -i v5.5.3
+	eim install --do-not-track true -i v5.5.2
+	eim install --do-not-track true -i v5.5.1
+	eim install --do-not-track true -i v5.5.6
