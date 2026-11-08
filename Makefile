@@ -311,4 +311,3 @@ idf-version-test-install:
 	eim install --do-not-track true -i v5.5.3
 	eim install --do-not-track true -i v5.5.2
 	eim install --do-not-track true -i v5.5.1
-	eim install --do-not-track true -i v5.5.6
