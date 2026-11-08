@@ -276,3 +276,38 @@ buildall:
 vscode:
 	rm -rf .vscode
 	cp -r .vscode.template .vscode
+
+# IDF version test
+.PHONY: idf-version-test
+idf-version-test:
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-6.0.2 IDF_VERSION=6.0.2
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.6 IDF_VERSION=5.5.6
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.5 IDF_VERSION=5.5.5
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.4 IDF_VERSION=5.5.4
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.3 IDF_VERSION=5.5.3
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.2 IDF_VERSION=5.5.2
+	rm -rf sdkconfig_tanmatsu
+	rm -rf managed_components
+	$(MAKE) build DEVICE=tanmatsu BUILD=build-idf-5.5.1 IDF_VERSION=5.5.1
+
+.PHONY: idf-version-test-install
+idf-version-test-install:
+	eim install --do-not-track true -i 6.0.2
+	eim install --do-not-track true -i 5.5.6
+	eim install --do-not-track true -i 5.5.5
+	eim install --do-not-track true -i 5.5.4
+	eim install --do-not-track true -i 5.5.3
+	eim install --do-not-track true -i 5.5.2
+	eim install --do-not-track true -i 5.5.1
